@@ -124,7 +124,7 @@ app.post("/form/addRandomString", async (request, response) => {
       data: data,
     },
     process.env.privateKey,
-    { expiresIn: "2hours" }
+    { expiresIn: "10hours" }
   );
 
   // ? Here we check wheather the mentioned email-id in forgot-password page available in DB or Not.
