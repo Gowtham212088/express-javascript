@@ -24,18 +24,6 @@ app.use(express.json());
 
 app.use(cors());
 
-// ? DataBase Connection
-
-async function createConnection() {
-  const client = new MongoClient(MONGO_URL);
-
-  await client.connect();
-
-  console.log("MongoDb is connected to server 👍🏽");
-
-  return client;
-}
-
 const client = await createConnection();
 
 app.get("/", (request, response) => {
@@ -216,6 +204,20 @@ app.post("/check", async (request, response) => {
 });
 
 app.listen(PORT, () => console.log(`Server connected to the ${PORT}`));
+
+//! ____________________________________________________________Functions________________________________________________
+
+// ? DataBase Connection
+
+async function createConnection() {
+  const client = new MongoClient(MONGO_URL);
+
+  await client.connect();
+
+  console.log("MongoDb is connected to server 👍🏽");
+
+  return client;
+}
 
 // ?  Hashing and salting process before storing a password in DB
 
