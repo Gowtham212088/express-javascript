@@ -78,7 +78,6 @@ app.post("/form/signIn", async (request, response) => {
           id: signIn._id,
         },
         process.env.privateKey1,
-        { expiresIn: "5hours" }
       );
       // const updateSession = await client.db("signUp").collection("user").updateOne({email:email},{$set:{tocken:tocken}})
 
@@ -101,18 +100,14 @@ var sender = nodemailer.createTransport({
 app.post("/form/addRandomString", async (request, response) => {
   const data = request.body;
 
-  const route = "resetPassword/:_id";
+ const { name, email } = request.body;
 
-  const { name, email } = request.body;
-
-  // const randString = await createPassword(name);
-
-  let tocken = jsonwebtocken.sign(
+  let tocken =await jsonwebtocken.sign(
     {
       data: data,
     },
     process.env.privateKey,
-    { expiresIn: "10hours" }
+    { expiresIn: "20hours" }
   );
 
   // ? Here we check wheather the mentioned email-id in forgot-password page available in DB or Not.
@@ -124,9 +119,9 @@ app.post("/form/addRandomString", async (request, response) => {
   const checkAvailablity = await client
     .db("signUp")
     .collection("user")
-    .findOne(data);
+    .findOne(data)
 
-  const BSON_id = checkAvailablity._id;
+  const BSON_id = await checkAvailablity._id;
 
   console.log(BSON_id);
 
@@ -159,7 +154,7 @@ app.post("/form/addRandomString", async (request, response) => {
 });
 
 app.post("/reset-password/:_id/:tocken", async (request, response) => {
-  
+
   const { _id } = request.params;
 
   const token = request.header("token");
