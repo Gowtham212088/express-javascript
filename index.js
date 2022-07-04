@@ -39,7 +39,7 @@ app.post("/form/signUp", async (request, response) => {
   const hashPassword = await createPassword(password);
 
   const newUser = {
-    Name: firstname + " " + secondname,
+    name: firstname + " " + secondname,
     email: email,
     contact: contact,
     password: hashPassword,
