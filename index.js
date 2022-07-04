@@ -73,15 +73,14 @@ app.post("/form/signIn", async (request, response) => {
     if (!isPasswordMatch) {
       response.status(401).send("Invalid credentials");
     } else {
-      const tocken = jsonwebtocken.sign(
+      const token = jsonwebtocken.sign(
         {
           id: signIn._id,
         },
         process.env.privateKey1,
       );
-      // const updateSession = await client.db("signUp").collection("user").updateOne({email:email},{$set:{tocken:tocken}})
-
-      response.send({ message: "Successful login", tocken });
+      
+      response.send({ message: "Successful login", token });
     }
   }
 });
@@ -102,7 +101,7 @@ app.post("/form/addRandomString", async (request, response) => {
 
  const { name, email } = request.body;
 
-  let tocken =await jsonwebtocken.sign(
+  let token =await jsonwebtocken.sign(
     {
       data: data,
     },
@@ -114,8 +113,7 @@ app.post("/form/addRandomString", async (request, response) => {
 
   // ? If email exists in DB we send mail to the existing mail-id.
 
-  // const updateSession = await client.db("signUp").collection("user").updateOne({email:email},{$set:{tocken:tocken}})
-
+  
   const checkAvailablity = await client
     .db("signUp")
     .collection("user")
@@ -133,7 +131,7 @@ app.post("/form/addRandomString", async (request, response) => {
       from: process.env.from, // Sender address
       to: email,
       subject: "Password verification",
-      text: `${process.env.Base_URL}/${BSON_id}/${tocken}`,
+      text: `${process.env.Base_URL}/${BSON_id}/${token}`,
     };
 
     sender.sendMail(composemail, function (error, info) {
@@ -153,7 +151,7 @@ app.post("/form/addRandomString", async (request, response) => {
   }
 });
 
-app.post("/reset-password/:_id/:tocken", async (request, response) => {
+app.post("/reset-password/:_id/:token", async (request, response) => {
 
   const { _id } = request.params;
 
@@ -172,7 +170,7 @@ app.post("/reset-password/:_id/:tocken", async (request, response) => {
     const verify = jsonwebtocken.verify(token, process.env.privateKey);
     console.log(verify.data.email);
     if (verify.data.email !== conformId.email) {
-      response.status(404).send("Tocken not Matched");
+      response.status(404).send("Token not Matched");
     } else {
       if (password == newPassword) {
         const updatedHashPassword = await createPassword(password);
