@@ -41,5 +41,13 @@ ________________________________________________________________________________
     "secondname":"kumar",
     "email":"vgk9007@gmail.com",
     "contact":"8954765487",
-    "password":"welcome@123"
+    "password":"rajaraja6324"
+}
+
+{
+    "firstname":"veluchamy",
+    "secondname":"chinnadurai",
+    "email":"veluchamy6666@gmail.com",
+    "contact":"8954765647",
+    "password":"rajaraja212088"
 }

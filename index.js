@@ -32,28 +32,41 @@ app.get("/", (request, response) => {
 
 // ?  SIGNUP DETAILS
 
-app.post("/form/signUp", async (request, response) => {
-  const { firstname, secondname, email, contact, password } = request.body;
+app.post( "/form/signUp",async (request, response) => {
+    const { firstname, secondname, email, contact, password } = request.body;
 
-  // !  PASSWORD HASHING PROCESS
-  const hashPassword = await createPassword(password);
+    // !  PASSWORD HASHING PROCESS
+    const hashPassword = await createPassword(password);
 
-  const newUser = {
-    name: firstname + " " + secondname,
-    email: email,
-    contact: contact,
-    password: hashPassword,
-  };
+    const newUser = {
+      name: firstname + " " + secondname,
+      email: email,
+      contact: contact,
+      password: hashPassword,
+    };
 
+    const checkExisting = await client
+      .db("signUp")
+      .collection("user")
+      .findOne({email:newUser.email});
+
+    if (!checkExisting) {
+      const signUp = await client
+      .db("signUp")
+      .collection("user")
+      .insertOne(newUser);
+
+    if (!signUp) {
+      response.status(404).send("Error");
+    }else{
+      response.send(signUp);
+    }
+    } else {
+    response.status(409).send({ error: "Account already exists" });
+    }
+  }
   // ! CREATING A SIGNUP DATA ON DATABASE
-
-  const signUp = await client
-    .db("signUp")
-    .collection("user")
-    .insertOne(newUser);
-
-  response.send(signUp);
-});
+);
 
 // ? LOGIN VERIFICATION
 
