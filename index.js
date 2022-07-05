@@ -80,7 +80,7 @@ app.post("/form/signIn", async (request, response) => {
         process.env.privateKey1
       );
 
-      response.send({ message: ` ${signIn.name}`, token });
+      response.send({ message: `Welcome ${signIn.name}` });
     }
   }
 });
