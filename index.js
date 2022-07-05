@@ -77,10 +77,10 @@ app.post("/form/signIn", async (request, response) => {
         {
           id: signIn._id,
         },
-        process.env.privateKey1,
+        process.env.privateKey1
       );
-      
-      response.send({ message: "Successful login", token });
+
+      response.send({ message: ` ${signIn.name}`, token });
     }
   }
 });
@@ -99,9 +99,9 @@ var sender = nodemailer.createTransport({
 app.post("/form/addRandomString", async (request, response) => {
   const data = request.body;
 
- const { name, email } = request.body;
+  const { name, email } = request.body;
 
-  let token =await jsonwebtocken.sign(
+  let token = await jsonwebtocken.sign(
     {
       data: data,
     },
@@ -113,11 +113,10 @@ app.post("/form/addRandomString", async (request, response) => {
 
   // ? If email exists in DB we send mail to the existing mail-id.
 
-  
   const checkAvailablity = await client
     .db("signUp")
     .collection("user")
-    .findOne(data)
+    .findOne(data);
 
   const BSON_id = await checkAvailablity._id;
 
@@ -152,7 +151,6 @@ app.post("/form/addRandomString", async (request, response) => {
 });
 
 app.post("/reset-password/:_id/:token", async (request, response) => {
-
   const { _id } = request.params;
 
   const token = request.header("token");
