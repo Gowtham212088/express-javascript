@@ -65,6 +65,7 @@ app.post( "/form/signUp",async (request, response) => {
     response.status(409).send({ error: "Account already exists" });
     }
   }
+  
   // ! CREATING A SIGNUP DATA ON DATABASE
 );
 
@@ -107,9 +108,8 @@ var sender = nodemailer.createTransport({
   },
 });
 
-// app.post("/form/mailer", async (request, response) => {});
-
 app.post("/form/addRandomString", async (request, response) => {
+  
   const data = request.body;
 
   const { name, email } = request.body;
