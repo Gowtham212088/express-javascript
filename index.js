@@ -32,42 +32,40 @@ app.get("/", (request, response) => {
 
 // ?  SIGNUP DETAILS
 
-app.post( "/form/signUp",async (request, response) => {
-    const { firstname, secondname, email, contact, password } = request.body;
+app.post("/form/signUp", async (request, response) => {
+  const { firstname, secondname, email, contact, password } = request.body;
 
-    // !  PASSWORD HASHING PROCESS
-    const hashPassword = await createPassword(password);
+  // !  PASSWORD HASHING PROCESS
 
-    const newUser = {
-      name: firstname + " " + secondname,
-      email: email,
-      contact: contact,
-      password: hashPassword,
-    };
+  const hashPassword = await createPassword(password);
 
-    const checkExisting = await client
-      .db("signUp")
-      .collection("user")
-      .findOne({email:newUser.email});
+  const newUser = {
+    name: firstname + " " + secondname,
+    email: email,
+    contact: contact,
+    password: hashPassword,
+  };
 
-    if (!checkExisting) {
-      const signUp = await client
+  const checkExisting = await client
+    .db("signUp")
+    .collection("user")
+    .findOne({ email: newUser.email });
+
+  if (!checkExisting) {
+    const signUp = await client
       .db("signUp")
       .collection("user")
       .insertOne(newUser);
 
     if (!signUp) {
       response.status(404).send("Error");
-    }else{
-      response.send(signUp);
-    }
     } else {
-    response.status(409).send({ error: "Account already exists" });
+      response.send("User Created Sucessfully");
     }
+  } else {
+    response.status(409).send("Account already exists");
   }
-  
-  // ! CREATING A SIGNUP DATA ON DATABASE
-);
+});
 
 // ? LOGIN VERIFICATION
 
@@ -99,28 +97,13 @@ app.post("/form/signIn", async (request, response) => {
   }
 });
 
-var sender = nodemailer.createTransport({
-  service: "gmail", // Gmail service
-  // Authentication
-  auth: {
-    user: process.env.email, // Email
-    pass: process.env.password, // Password
-  },
-});
-
 app.post("/form/addRandomString", async (request, response) => {
-  
   const data = request.body;
 
   const { name, email } = request.body;
 
-  let token = await jsonwebtocken.sign(
-    {
-      data: data
-    },
-    process.env.privateKey,
-    { expiresIn: "24hours" }
-  );
+  let token = await tokenGenerator(email);
+  const verifyIt = await jsonwebtocken.verify(token, process.env.privateKey3);
 
   // ? Here we check wheather the mentioned email-id in forgot-password page available in DB or Not.
 
@@ -133,40 +116,45 @@ app.post("/form/addRandomString", async (request, response) => {
 
   const BSON_id = await checkAvailablity._id;
 
-  console.log(BSON_id);
+  // console.log(BSON_id);
 
   if (!checkAvailablity) {
     response.status(404).send("User doesn't exist");
   } else {
     // ?  Node Mailer
+
+    var sender = nodemailer.createTransport({
+      service: "gmail", // Gmail service
+      // Authentication
+      auth: {
+        user: process.env.secondaryMail, // Email
+        pass: process.env.secondaryPass, // Password
+      },
+    });
+
     var composemail = {
-      from: process.env.from, // Sender address
+      from: process.env.secondaryMail, // Sender address
       to: email,
       subject: "Password verification",
       text: `${process.env.Base_URL}/${BSON_id}/${token}`,
     };
 
-    sender.sendMail(composemail, function (error, info) {
-      if (error) {
-        response.status(404).send("server busy");
-      } else {
-        console.log("success" + info.response);
-
-        response.send({
-          to: email,
-          subject: subject,
-          message:
-            "Please Click the link below to reset the passsword for security reasons the link will be expired in the next 10 minute",
-        });
-      }
-    });
-  }
-});
+    sender.sendMail(composemail).then((response,request)=>{
+     response.send({
+        to: email,
+        subject: subject,
+        message:
+          "Please Click the link below to reset the passsword for security reasons the link will be expired in the next 10 minute",
+      });
+ }).catch((error)=>{
+      response.send(error)
+    })
+  }})
 
 app.post("/reset-password/:_id/:token", async (request, response) => {
   const { _id } = request.params;
 
-  const token = request.header("token");
+  const { token } = request.params;
 
   const { password, newPassword } = request.body;
 
@@ -174,13 +162,16 @@ app.post("/reset-password/:_id/:token", async (request, response) => {
     .db("signUp")
     .collection("user")
     .findOne({ _id: ObjectId(`${_id}`) });
-
+  // console.log(conformId.email);
   if (!conformId) {
     response.status(404).send("not found");
   } else {
-    const verify = jsonwebtocken.verify(token, process.env.privateKey);
-    console.log(verify.data.email);
-    if (verify.data.email !== conformId.email) {
+    const verify = await jsonwebtocken.decode(token, process.env.privateKey3);
+    // console.log(verify.email);
+
+    //? CONFORMING E-MAIL FROM TOKEN AND DATABASE
+
+    if (verify.email !== conformId.email) {
       response.status(404).send("Token not Matched");
     } else {
       if (password == newPassword) {
@@ -195,6 +186,8 @@ app.post("/reset-password/:_id/:token", async (request, response) => {
           );
 
         response.send("Password updated Successfully");
+      } else {
+        response.send("Password Mismatches");
       }
     }
   }
@@ -229,6 +222,15 @@ async function createConnection() {
 async function createPassword(password) {
   const salt = await bcrypt.genSalt(10); // Addition of some random string
   const hash = await bcrypt.hash(password, salt);
-  console.log(hash);
+  // console.log(hash);
   return hash;
 }
+
+//? TOKEN GENERATOR
+
+const tokenGenerator = async (email) => {
+  const token = jsonwebtocken.sign({ email }, process.env.privateKey3, {
+    expiresIn: "3hours",
+  });
+  return token;
+};
