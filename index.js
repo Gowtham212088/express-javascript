@@ -22,7 +22,7 @@ app.use(express.json());
 
 // ? CORS Third party middleware
 
-app.use(cors({origin:"*"}));
+app.use(cors());
 
 const client = await createConnection();
 
