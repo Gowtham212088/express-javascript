@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { request } from "http";
-import jsonwebtocken from "jsonwebtoken";
+import jsonwebtoken from "jsonwebtoken";
 import { verify } from "crypto";
 import cors from 'cors'
 // const cors = require("cors"); 
@@ -96,7 +96,7 @@ app.post("/form/signIn", async (request, response) => {
     if (!isPasswordMatch) {
       response.status(401).send("Invalid credentials");
     } else {
-      const token = jsonwebtocken.sign(
+      const token = jsonwebtoken.sign(
         {
           id: signIn._id,
         },
@@ -124,7 +124,7 @@ app.post("/form/addRandomString", async (request, response) => {
 
   const { name, email } = request.body;
 
-  let token = await jsonwebtocken.sign(
+  let token = await jsonwebtoken.sign(
     {
       data: data
     },
@@ -188,7 +188,7 @@ app.post("/reset-password/:_id/:token", async (request, response) => {
   if (!conformId) {
     response.status(404).send("not found");
   } else {
-    const verify = jsonwebtocken.verify(token, process.env.privateKey);
+    const verify = jsonwebtoken.verify(token, process.env.privateKey);
     console.log(verify.data.email);
     if (verify.data.email !== conformId.email) {
       response.status(404).send("Token not Matched");
