@@ -8,9 +8,9 @@ import { request } from "http";
 import jsonwebtocken from "jsonwebtoken";
 import { verify } from "crypto";
 
-dotenv.config();
-
 const app = express();
+dotenv.config();
+app.use(cors({ origin: "*", }));
 
 const PORT = process.env.PORT||5000;
 
@@ -18,11 +18,11 @@ const MONGO_URL = process.env.MONGO_URL;
 
 //? Express Inbuild MiddleWare
 
-app.use(express.json());
+
 
 // ? CORS Third party middleware
 
-app.use(cors({ origin: "*", }));
+
 
 const client = await createConnection();
 
